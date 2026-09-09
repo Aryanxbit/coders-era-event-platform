@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% block title %}Organizer Portal Login — Coders Era Event Platform{% endblock %}
+
+{% block content %}
+<div style="max-width: 440px; margin: 3rem auto;">
+    <div class="card card-glass" style="padding: 2.25rem;">
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div class="brand-logo" style="justify-content: center; margin-bottom: 0.75rem;">
+                <span class="logo-dot"></span>
+                <span>Coders Era</span>
+            </div>
+            <h1 style="font-size: 1.5rem; margin-bottom: 0.35rem;">Organizer Access</h1>
+            <p style="font-size: 0.85rem; color: var(--text-secondary);">
+                Sign in to manage events, monitor attendance telemetry, and scan participant badges.
+            </p>
+        </div>
+
+        <form method="POST" action="/admin/login{% if next_url %}?next={{ next_url }}{% endif %}" id="login-form">
+            <div class="form-group">
+                <label class="form-label" for="login-email">Email Address</label>
+                <input 
+                    type="email" 
+                    id="login-email" 
+                    name="email" 
+                    class="form-control font-mono" 
+                    placeholder="organizer@codersera.in" 
+                    required 
+                    autocomplete="username"
+                    autofocus
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="login-password">Password</label>
+                <input 
+                    type="password" 
+                    id="login-password" 
+                    name="password" 
+                    class="form-control font-mono" 
+                    placeholder="••••••••••••" 
+                    required 
+                    autocomplete="current-password"
+                >
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 1rem;" id="btn-submit-login">
+                Sign In to Dashboard
+            </button>
+        </form>
+
+        <div style="margin-top: 2rem; padding-top: 1.25rem; border-top: 1px solid var(--border-subtle); text-align: center;">
+            <p style="font-size: 0.78rem; color: var(--text-muted);">
+                🔒 <strong>Local Development Notice:</strong><br>
+                Credentials are configured in your private <code>.env</code> file or dynamically printed in your console when running <code>app/seed.py</code>.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}

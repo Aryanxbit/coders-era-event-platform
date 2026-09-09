@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Coders Era Event Platform{% endblock %}</title>
+    <meta name="description" content="High-craft developer event registration, digital ticket passes, and cryptographic one-time check-in system.">
+    
+    <!-- Design System Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Top Navigation Bar -->
+    <header class="navbar">
+        <div class="container nav-container">
+            <a href="/" class="brand-logo" id="nav-brand-link">
+                <span class="logo-dot"></span>
+                <span>Coders Era</span>
+                <span class="brand-badge">Events</span>
+            </a>
+            
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/" class="nav-link" id="nav-events-link">Discover Events</a></li>
+                    {% if session.get('user_id') %}
+                        <li><a href="/admin/dashboard" class="nav-link" id="nav-dashboard-link">Dashboard</a></li>
+                        <li><a href="/admin/scanner" class="nav-link" id="nav-scanner-link">QR Scanner</a></li>
+                        <li><a href="/admin/participants" class="nav-link" id="nav-participants-link">Attendees</a></li>
+                        <li>
+                            <span class="badge badge-cyan">{{ session.get('user_role', 'organizer') }}</span>
+                        </li>
+                        <li>
+                            <form action="/admin/logout" method="POST" style="display:inline;">
+                                <button type="submit" class="btn btn-secondary btn-sm" id="nav-logout-btn">Logout</button>
+                            </form>
+                        </li>
+                    {% else %}
+                        <li><a href="/admin/login" class="btn btn-primary btn-sm" id="nav-login-btn">Organizer Login</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Flash Messages Container -->
+    <div class="container flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}" role="alert">
+                        <span>{{ message }}</span>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Area -->
+    <main class="container" style="flex: 1; padding-top: 1rem; padding-bottom: 2.5rem;">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-content">
+            <div>
+                <p class="footer-text">
+                    <strong>Coders Era Event Platform</strong> — Built for ambitious student developers & technical symposiums.
+                </p>
+                <p class="footer-text" style="margin-top: 0.25rem; font-size: 0.75rem;">
+                    Independent college project inspired by the Coders Era developer community aesthetic.
+                </p>
+            </div>
+            <div>
+                <span class="badge badge-cyan font-mono">Academic Submission 2026</span>
+            </div>
+        </div>
+    </footer>
+
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

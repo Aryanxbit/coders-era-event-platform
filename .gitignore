@@ -1,0 +1,38 @@
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# Python Cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Database & SQLite files
+instance/
+*.db
+*.sqlite3
+*.db-wal
+*.db-shm
+
+# Environment & Local Secrets
+.env
+.env.*
+*.env
+*.key
+*.pem
+*credentials*
+*secret*
+local_creds.json
+
+# IDE & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Test & coverage
+.pytest_cache/
+.coverage
+htmlcov/

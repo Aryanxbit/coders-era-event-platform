@@ -1,0 +1,264 @@
+{% extends "base.html" %}
+
+{% block title %}Manage Events & Custom Forms — Coders Era{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-header">
+    <div class="dashboard-title-group">
+        <h1>Event Management & Form Builder</h1>
+        <p>Configure events, registration quotas, and dynamic registration questions.</p>
+    </div>
+    <div class="dashboard-actions">
+        <a href="/admin/dashboard" class="btn btn-secondary">
+            ← Back to Dashboard
+        </a>
+        <button type="button" class="btn btn-primary" onclick="toggleEventForm()" id="btn-toggle-create-event">
+            + Create New Event
+        </button>
+    </div>
+</div>
+
+<!-- New Event Creation Form Panel (Collapsible) -->
+<div id="create-event-panel" class="card card-glass" style="display: none; margin-bottom: 2.5rem; padding: 2rem;">
+    <h2 style="font-size: 1.4rem; margin-bottom: 1.25rem;">Create New Technical Event</h2>
+    <form method="POST" action="/admin/events/new" id="new-event-form" onsubmit="prepareCustomFields()">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.25rem;">
+            <!-- Title -->
+            <div class="form-group">
+                <label class="form-label" for="ev-title">Event Title *</label>
+                <input type="text" id="ev-title" name="title" class="form-control" placeholder="e.g. Synapse & Syntax Masterclass" required>
+            </div>
+
+            <!-- Slug -->
+            <div class="form-group">
+                <label class="form-label" for="ev-slug">URL Slug (Optional)</label>
+                <input type="text" id="ev-slug" name="slug" class="form-control font-mono" placeholder="e.g. synapse-syntax-2026">
+            </div>
+
+            <!-- Category -->
+            <div class="form-group">
+                <label class="form-label" for="ev-category">Category</label>
+                <select id="ev-category" name="category" class="form-control">
+                    <option value="Hackathon">Hackathon</option>
+                    <option value="Workshop">Workshop</option>
+                    <option value="Masterclass">Masterclass</option>
+                    <option value="Meetup">Meetup</option>
+                </select>
+            </div>
+
+            <!-- Mode -->
+            <div class="form-group">
+                <label class="form-label" for="ev-mode">Mode</label>
+                <select id="ev-mode" name="mode" class="form-control">
+                    <option value="offline">Offline / In-Person</option>
+                    <option value="online">Online / Virtual</option>
+                    <option value="hybrid">Hybrid</option>
+                </select>
+            </div>
+
+            <!-- Venue -->
+            <div class="form-group">
+                <label class="form-label" for="ev-venue">Venue / Location *</label>
+                <input type="text" id="ev-venue" name="venue" class="form-control" placeholder="e.g. Campus Seminar Hall 1" required>
+            </div>
+
+            <!-- Capacity -->
+            <div class="form-group">
+                <label class="form-label" for="ev-capacity">Max Capacity (0 = Unlimited)</label>
+                <input type="number" id="ev-capacity" name="max_capacity" class="form-control font-mono" value="150" min="0">
+            </div>
+
+            <!-- Start Time -->
+            <div class="form-group">
+                <label class="form-label" for="ev-start">Start Date & Time *</label>
+                <input type="datetime-local" id="ev-start" name="start_time" class="form-control" required>
+            </div>
+
+            <!-- End Time -->
+            <div class="form-group">
+                <label class="form-label" for="ev-end">End Date & Time *</label>
+                <input type="datetime-local" id="ev-end" name="end_time" class="form-control" required>
+            </div>
+        </div>
+
+        <!-- Tagline -->
+        <div class="form-group">
+            <label class="form-label" for="ev-tagline">Tagline / Short Summary</label>
+            <input type="text" id="ev-tagline" name="tagline" class="form-control" placeholder="One-line summary for event cards">
+        </div>
+
+        <!-- Description -->
+        <div class="form-group">
+            <label class="form-label" for="ev-desc">Detailed Description</label>
+            <textarea id="ev-desc" name="description" class="form-control" rows="3" placeholder="Full event syllabus, instructions, and schedule..."></textarea>
+        </div>
+
+        <!-- Dynamic Custom Registration Fields Builder -->
+        <div class="custom-fields-builder">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <div>
+                    <strong style="font-size: 0.95rem;">Dynamic Registration Questions</strong>
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">
+                        Configure custom questions participants must answer when registering (e.g. Roll No, GitHub).
+                    </p>
+                </div>
+                <button type="button" class="btn btn-secondary btn-sm" onclick="addCustomFieldRow()">+ Add Field</button>
+            </div>
+
+            <div id="fields-container">
+                <!-- Field rows will be added dynamically here -->
+            </div>
+            
+            <input type="hidden" name="custom_fields_json" id="custom_fields_json" value="[]">
+        </div>
+
+        <div style="margin-top: 1.5rem; display: flex; gap: 0.75rem; justify-content: flex-end;">
+            <button type="button" class="btn btn-secondary" onclick="toggleEventForm()">Cancel</button>
+            <button type="submit" class="btn btn-primary" id="btn-save-event">Publish Event</button>
+        </div>
+    </form>
+</div>
+
+<!-- Existing Events Table -->
+<div class="dashboard-section">
+    <div class="section-header">
+        <h2>Configured Events</h2>
+        <span class="badge badge-cyan font-mono">{{ events|length }} Total</span>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Event</th>
+                    <th>Category</th>
+                    <th>Mode</th>
+                    <th>Venue</th>
+                    <th>Starts</th>
+                    <th>Registrations</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for event in events %}
+                <tr>
+                    <td>
+                        <strong style="color: var(--text-primary);">{{ event.title }}</strong><br>
+                        <span class="font-mono" style="font-size: 0.75rem; color: var(--text-muted);">/event/{{ event.slug }}</span>
+                    </td>
+                    <td><span class="badge badge-cyan">{{ event.category }}</span></td>
+                    <td>{{ event.mode|capitalize }}</td>
+                    <td style="font-size: 0.85rem;">{{ event.venue }}</td>
+                    <td class="font-mono" style="font-size: 0.8rem;">{{ event.start_time[:16] }}</td>
+                    <td class="font-mono" style="font-weight: 700;">
+                        {{ event.registrations_count }}
+                        {% if event.max_capacity > 0 %}
+                            <span style="font-size: 0.75rem; color: var(--text-muted); font-weight: normal;">/ {{ event.max_capacity }}</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge badge-success">{{ event.status|capitalize }}</span>
+                    </td>
+                    <td>
+                        <div style="display: flex; gap: 0.5rem;">
+                            <a href="/event/{{ event.slug }}" target="_blank" class="btn btn-secondary btn-sm" title="View Landing Page">
+                                🔗 Public
+                            </a>
+                            <a href="/admin/participants?event_id={{ event.id }}" class="btn btn-primary btn-sm" title="View Roster">
+                                👥 Roster
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" style="text-align: center; padding: 2rem;">No events found. Click '+ Create New Event' above.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function toggleEventForm() {
+    const panel = document.getElementById('create-event-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    if (panel.style.display === 'block') {
+        panel.scrollIntoView({ behavior: 'smooth' });
+    }
+}
+
+// Custom Field Builder Logic
+const fieldsContainer = document.getElementById('fields-container');
+
+function addCustomFieldRow(label = '', type = 'text', required = true, placeholder = '') {
+    const rowId = 'field-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
+    const div = document.createElement('div');
+    div.className = 'custom-field-row';
+    div.id = rowId;
+    div.innerHTML = `
+        <input type="text" class="form-control field-label" placeholder="Question Label (e.g. Student Roll Number)" value="${label}" style="flex: 3;" required>
+        <select class="form-control field-type" style="flex: 2;">
+            <option value="text" ${type === 'text' ? 'selected' : ''}>Text Input</option>
+            <option value="number" ${type === 'number' ? 'selected' : ''}>Number</option>
+            <option value="select" ${type === 'select' ? 'selected' : ''}>Dropdown (Options)</option>
+        </select>
+        <input type="text" class="form-control field-extra" placeholder="Options comma-separated (for dropdown)" style="flex: 3; display: ${type === 'select' ? 'block' : 'none'};">
+        <label style="display: flex; align-items: center; gap: 0.35rem; font-size: 0.8rem; color: var(--text-secondary); cursor: pointer; white-space: nowrap;">
+            <input type="checkbox" class="field-req" ${required ? 'checked' : ''}> Required
+        </label>
+        <button type="button" class="btn btn-danger btn-sm" onclick="document.getElementById('${rowId}').remove()" title="Remove Question">✕</button>
+    `;
+
+    // Toggle options input when select type is chosen
+    const typeSelect = div.querySelector('.field-type');
+    const extraInput = div.querySelector('.field-extra');
+    typeSelect.addEventListener('change', (e) => {
+        extraInput.style.display = e.target.value === 'select' ? 'block' : 'none';
+        if (e.target.value === 'select' && !extraInput.placeholder.includes('comma-separated')) {
+            extraInput.placeholder = 'e.g. CSE, IT, AI-DS, Mechanical';
+        }
+    });
+
+    fieldsContainer.appendChild(div);
+}
+
+// Pre-populate with a recommended field
+addCustomFieldRow('College Roll Number / Student ID', 'text', true, 'e.g. 21CS045');
+
+function prepareCustomFields() {
+    const rows = fieldsContainer.querySelectorAll('.custom-field-row');
+    const customFields = [];
+
+    rows.forEach((row, idx) => {
+        const label = row.querySelector('.field-label').value.trim();
+        const type = row.querySelector('.field-type').value;
+        const required = row.querySelector('.field-req').checked;
+        const extra = row.querySelector('.field-extra').value.trim();
+
+        if (label) {
+            const fieldObj = {
+                id: 'custom_' + idx + '_' + label.toLowerCase().replace(/[^a-z0-9]/g, '_'),
+                label: label,
+                type: type,
+                required: required
+            };
+            if (type === 'select' && extra) {
+                fieldObj.options = extra.split(',').map(s => s.trim()).filter(Boolean);
+            }
+            customFields.push(fieldObj);
+        }
+    });
+
+    document.getElementById('custom_fields_json').value = JSON.stringify(customFields);
+}
+</script>
+{% endblock %}

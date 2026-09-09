@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}Coders Era Event Platform — Empowering Student Developers{% endblock %}
+
+{% block content %}
+<section style="padding: 3rem 0; text-align: center;">
+    <div style="display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem;">
+        <span class="badge badge-cyan">Student Developer Ecosystem</span>
+        <span class="badge badge-success">Live Verification Engine</span>
+    </div>
+    
+    <h1 style="font-size: 2.75rem; font-weight: 800; letter-spacing: -0.03em; max-width: 800px; margin: 0 auto 1.25rem; line-height: 1.2;">
+        Ship Software. Run Hackathons. <br>
+        <span style="background: var(--accent-gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+            Verify Tickets in Milliseconds.
+        </span>
+    </h1>
+    
+    <p style="font-size: 1.1rem; max-width: 650px; margin: 0 auto 2rem; color: var(--text-secondary);">
+        The premier event registration and cryptographic verification platform built for ambitious college hackathons, technical workshops, and developer meetups.
+    </p>
+    
+    <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="#events" class="btn btn-primary" id="hero-explore-btn">Explore Active Events</a>
+        {% if not session.get('user_id') %}
+            <a href="/admin/login" class="btn btn-secondary" id="hero-organizer-btn">Organizer Portal</a>
+        {% else %}
+            <a href="/admin/dashboard" class="btn btn-secondary" id="hero-dashboard-btn">Go to Dashboard</a>
+        {% endif %}
+    </div>
+</section>
+
+<!-- Active Events List -->
+<section id="events" style="margin-top: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 0.75rem;">
+        <div>
+            <h2 style="font-size: 1.6rem;">Upcoming Technical Events</h2>
+            <p style="font-size: 0.9rem;">Register online and receive your digital ticket with unique QR code.</p>
+        </div>
+        <span class="badge badge-cyan font-mono">{{ events|length }} Active Events</span>
+    </div>
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1.5rem;">
+        {% for event in events %}
+            <div class="card card-glass" id="event-card-{{ event['slug'] }}">
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+                    <span class="badge badge-cyan">{{ event['category'] }}</span>
+                    <span class="badge badge-success">{{ event['mode']|capitalize }}</span>
+                </div>
+                
+                <h3 style="margin-bottom: 0.5rem; font-size: 1.25rem;">{{ event['title'] }}</h3>
+                <p style="font-size: 0.9rem; margin-bottom: 1.25rem; color: var(--text-secondary); line-height: 1.5;">
+                    {{ event['tagline'] or event['description'][:120] ~ '...' }}
+                </p>
+                
+                <div style="margin-bottom: 1.5rem; font-size: 0.85rem; color: var(--text-muted); display: flex; flex-direction: column; gap: 0.35rem;">
+                    <div>📍 <strong>Venue:</strong> {{ event['venue'] }}</div>
+                    <div>📅 <strong>Starts:</strong> {{ event['start_time'][:16] }}</div>
+                </div>
+
+                <div style="display: flex; gap: 0.75rem;">
+                    <a href="/event/{{ event['slug'] }}" class="btn btn-primary btn-sm" style="flex: 1;" id="btn-register-{{ event['slug'] }}">
+                        Register Now
+                    </a>
+                </div>
+            </div>
+        {% else %}
+            <div class="card" style="grid-column: 1 / -1; text-align: center; padding: 3rem;">
+                <p>No active events published at the moment. Check back soon!</p>
+            </div>
+        {% endfor %}
+    </div>
+</section>
+{% endblock %}
