@@ -80,15 +80,16 @@ This document tracks all deliverables for the **Coders Era Event Platform**, str
 - [x] Build live telemetry API endpoint (`/admin/api/telemetry`)
 - [x] Implement unit & integration test suite (`tests/test_phase2.py`) with 7/7 tests passing
 
-### Phase 3: Public Event Landing, Dynamic Form & Digital Ticket (Target: Sept 12–13)
-- [ ] Build public event discovery and details page (`/event/<slug>`)
-- [ ] Implement dynamic registration form rendering and validation
-- [ ] Enforce unique `(event_id, participant_email)` duplicate prevention
-- [ ] Implement `app/services/ticket_service.py`:
+### Phase 3: Public Event Landing, Dynamic Form & Digital Ticket (Target: Sept 12–13) — COMPLETED
+- [x] Build public event discovery and details page (`/event/<slug>`)
+- [x] Implement dynamic registration form rendering and validation
+- [x] Enforce unique `(event_id, participant_email)` duplicate prevention
+- [x] Implement `app/services/ticket_service.py`:
   - `ticket_code`: `CE-XXXX-XXXX-XXXX`
   - `ticket_secret`: 256-bit random token
   - Dynamic QR code generation with Python `qrcode`
-- [ ] Build digital boarding pass ticket view (`/ticket/<ticket_code>`) with PNG/print options
+- [x] Build digital boarding pass ticket view (`/ticket/<ticket_code>`) with PNG/print options
+- [x] Implement unit & integration test suite (`tests/test_phase3.py`) with 8/8 tests passing (15/15 overall)
 
 ### Phase 4: Fast QR Scanner & Atomic Check-In (Target: Sept 14–15)
 - [ ] Build mobile-optimized scanner view (`/admin/scanner`) using `html5-qrcode`
@@ -104,11 +105,12 @@ This document tracks all deliverables for the **Coders Era Event Platform**, str
 - [ ] Record audit trail entry in `checkin_logs`
 - [ ] Instant visual status feedback modal (Green for success, Red for rejection)
 
-### Phase 5: Participant Management & CSV Export (Target: Sept 16)
-- [ ] Build searchable participant roster (`/admin/participants`)
-- [ ] Implement instant search filter (by name, email, or ticket code)
-- [ ] Implement manual check-in toggle button in table
-- [ ] Implement CSV exporter (`app/services/export_service.py`) including custom question responses
+### Phase 5: Participant Management & CSV Export (Target: Sept 16) — COMPLETED
+- [x] Build searchable participant roster (`/admin/participants`)
+- [x] Implement instant search filter (by name, email, or ticket code)
+- [x] Implement per-registration detail modal via `/admin/participants/<id>` JSON API
+- [x] Implement CSV exporter (`app/services/export_service.py`) including custom question responses
+- [x] Implement unit & integration test suite (`tests/test_phase5.py`) with 14/14 tests passing (37/37 overall)
 
 ### Phase 6: System Integration & Concurrency Verification (Target: Sept 17 — Development Freeze)
 - [ ] Verify full end-to-end user flow: Event view -> Register -> Ticket -> Admin login -> Scan -> Verify duplicate rejection

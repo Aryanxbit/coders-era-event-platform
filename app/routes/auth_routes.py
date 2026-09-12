@@ -25,7 +25,21 @@ def role_required(*allowed_roles):
             
             user_role = session.get("user_role", "volunteer")
             if user_role not in allowed_roles:
-                flash("You do not have permission to access that resource.", "danger")
+                # Return JSON 403 for API endpoints, JSON requests, and data exports
+                is_api_route = (
+                    request.is_json or 
+                    request.path.startswith("/admin/api/") or 
+                    request.path.startswith("/api/") or 
+                    request.path.endswith(".csv") or
+                    (request.path.startswith("/admin/participants/") and request.path != "/admin/participants")
+                )
+                if is_api_route:
+                    from flask import jsonify
+                    return jsonify({"error": "Forbidden: Organizer access required"}), 403
+
+                flash("Access denied: Organizer permissions required.", "danger")
+                if user_role == "volunteer":
+                    return redirect(url_for("checkin.scanner_view"))
                 return redirect(url_for("admin.dashboard"))
             return f(*args, **kwargs)
         return decorated_function
@@ -35,9 +49,9 @@ def role_required(*allowed_roles):
 def login():
     """Organizer and volunteer login portal."""
     if session.get("user_id"):
+        if session.get("user_role") == "volunteer":
+            return redirect(url_for("checkin.scanner_view"))
         return redirect(url_for("admin.dashboard"))
-
-    next_url = request.args.get("next", url_for("admin.dashboard"))
 
     if request.method == "POST":
         email = request.form.get("email", "").strip()
@@ -53,12 +67,21 @@ def login():
             session["user_role"] = user["role"]
             session.permanent = True
 
-            flash(f"Welcome back, {user['full_name']}!", "success")
-            return redirect(next_url)
+            flash(f"Welcome, {user['full_name']}!", "success")
+
+            # Default destination by role if next was not explicitly requested or was default
+            requested_next = request.args.get("next")
+            if requested_next:
+                return redirect(requested_next)
+
+            if user["role"] == "volunteer":
+                return redirect(url_for("checkin.scanner_view"))
+            else:
+                return redirect(url_for("admin.dashboard"))
         else:
             flash("Invalid email or password. Please check your credentials.", "danger")
 
-    return render_template("admin/login.html", next_url=next_url)
+    return render_template("admin/login.html")
 
 @auth_bp.route("/logout", methods=["POST", "GET"])
 def logout():

@@ -24,12 +24,20 @@
                 <ul class="nav-links">
                     <li><a href="/" class="nav-link" id="nav-events-link">Discover Events</a></li>
                     {% if session.get('user_id') %}
-                        <li><a href="/admin/dashboard" class="nav-link" id="nav-dashboard-link">Dashboard</a></li>
-                        <li><a href="/admin/scanner" class="nav-link" id="nav-scanner-link">QR Scanner</a></li>
-                        <li><a href="/admin/participants" class="nav-link" id="nav-participants-link">Attendees</a></li>
-                        <li>
-                            <span class="badge badge-cyan">{{ session.get('user_role', 'organizer') }}</span>
-                        </li>
+                        {% if session.get('user_role') in ['admin', 'organizer'] %}
+                            <li><a href="/admin/dashboard" class="nav-link" id="nav-dashboard-link">Dashboard</a></li>
+                            <li><a href="/admin/scanner" class="nav-link" id="nav-scanner-link">QR Scanner</a></li>
+                            <li><a href="/admin/participants" class="nav-link" id="nav-participants-link">Attendees</a></li>
+                            <li><a href="/admin/events" class="nav-link" id="nav-events-admin-link">Events</a></li>
+                            <li>
+                                <span class="badge badge-cyan">{{ session.get('user_role')|capitalize }}</span>
+                            </li>
+                        {% else %}
+                            <li><a href="/admin/scanner" class="nav-link" id="nav-scanner-link">📷 Gate Scanner</a></li>
+                            <li>
+                                <span class="badge badge-warning">Gate Volunteer</span>
+                            </li>
+                        {% endif %}
                         <li>
                             <form action="/admin/logout" method="POST" style="display:inline;">
                                 <button type="submit" class="btn btn-secondary btn-sm" id="nav-logout-btn">Logout</button>

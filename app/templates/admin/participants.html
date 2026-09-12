@@ -1,0 +1,270 @@
+{% extends "base.html" %}
+
+{% block title %}Participants — {% if selected_event %}{{ selected_event.title }}{% else %}All Events{% endif %} | Coders Era{% endblock %}
+
+{% block content %}
+<div style="max-width: 1100px; margin: 1rem auto 3rem;">
+
+    <!-- Header -->
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 1.75rem; font-weight: 800;">Participant Roster</h1>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                Search, view, and export attendee registrations.
+            </p>
+        </div>
+        <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            {% if selected_event %}
+            <a href="/admin/export/{{ event_id }}.csv" class="btn btn-primary btn-sm" id="btn-export-csv">
+                ⬇ Export CSV
+            </a>
+            {% endif %}
+            <a href="/admin/dashboard" class="btn btn-secondary btn-sm">← Dashboard</a>
+        </div>
+    </div>
+
+    <!-- Event Selector + Search Bar (single form) -->
+    <form method="get" action="/admin/participants" id="filter-form">
+        <div class="card card-glass" style="padding: 1.25rem; margin-bottom: 1.5rem;">
+            <div style="display: grid; grid-template-columns: 1fr 2fr auto; gap: 1rem; align-items: flex-end; flex-wrap: wrap;">
+                <div>
+                    <label class="form-label" for="event_id">Event</label>
+                    <select name="event_id" id="event_id" class="form-control" onchange="this.form.submit()">
+                        {% for ev in events %}
+                            <option value="{{ ev.id }}" {% if ev.id == event_id %}selected{% endif %}>
+                                {{ ev.title }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="form-label" for="search">Search</label>
+                    <input
+                        type="text"
+                        name="search"
+                        id="search"
+                        class="form-control"
+                        placeholder="Name, email, or Ticket Code..."
+                        value="{{ search }}"
+                        autocomplete="off"
+                    >
+                </div>
+                <div>
+                    <button type="submit" class="btn btn-primary" id="btn-search" style="margin-top: 0.25rem;">Search</button>
+                </div>
+            </div>
+        </div>
+    </form>
+
+    <!-- Summary Stats Bar -->
+    {% if selected_event %}
+    <div style="display: flex; gap: 1rem; margin-bottom: 1.5rem; flex-wrap: wrap;">
+        <div class="card card-glass" style="flex: 1; min-width: 140px; padding: 1rem 1.25rem; text-align: center;">
+            <div style="font-size: 1.85rem; font-weight: 800; color: var(--text-primary);">{{ summary.total }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Total Registered</div>
+        </div>
+        <div class="card card-glass" style="flex: 1; min-width: 140px; padding: 1rem 1.25rem; text-align: center; border-color: rgba(16,185,129,0.3);">
+            <div style="font-size: 1.85rem; font-weight: 800; color: var(--status-success);">{{ summary.checked_in }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Checked In</div>
+        </div>
+        <div class="card card-glass" style="flex: 1; min-width: 140px; padding: 1rem 1.25rem; text-align: center; border-color: rgba(245,158,11,0.3);">
+            <div style="font-size: 1.85rem; font-weight: 800; color: var(--status-warning);">{{ summary.pending }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Pending Entry</div>
+        </div>
+        {% if selected_event.max_capacity and selected_event.max_capacity > 0 %}
+        <div class="card card-glass" style="flex: 1; min-width: 140px; padding: 1rem 1.25rem; text-align: center; border-color: rgba(6,182,212,0.3);">
+            <div style="font-size: 1.85rem; font-weight: 800; color: var(--accent-secondary);">{{ selected_event.max_capacity }}</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Capacity</div>
+        </div>
+        {% endif %}
+    </div>
+    {% endif %}
+
+    <!-- Participants Table -->
+    <div class="card" style="padding: 0; overflow: hidden;">
+        {% if search %}
+        <div style="padding: 1rem 1.5rem; border-bottom: 1px solid var(--border-subtle); font-size: 0.85rem; color: var(--text-secondary);">
+            Showing <strong style="color: var(--text-primary);">{{ participants|length }}</strong> result(s) for
+            <span class="badge badge-cyan font-mono">{{ search }}</span>
+            &nbsp;·&nbsp; <a href="/admin/participants?event_id={{ event_id }}">Clear search</a>
+        </div>
+        {% endif %}
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.875rem;" id="participants-table">
+                <thead>
+                    <tr style="background: var(--bg-surface-elevated); border-bottom: 1px solid var(--border-subtle);">
+                        <th style="padding: 0.75rem 1rem; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">#</th>
+                        <th style="padding: 0.75rem 1rem; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Ticket Code</th>
+                        <th style="padding: 0.75rem 1rem; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Attendee</th>
+                        <th style="padding: 0.75rem 1rem; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Email</th>
+                        <th style="padding: 0.75rem 1rem; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Status</th>
+                        <th style="padding: 0.75rem 1rem; text-align: left; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Check-In Time</th>
+                        <th style="padding: 0.75rem 1rem; text-align: center; color: var(--text-muted); font-weight: 600; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.05em;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for p in participants %}
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04); transition: background 0.15s;" class="participant-row" data-id="{{ p.id }}">
+                        <td style="padding: 0.75rem 1rem; color: var(--text-muted);">{{ loop.index }}</td>
+                        <td style="padding: 0.75rem 1rem;">
+                            <a href="/ticket/{{ p.ticket_code }}" target="_blank" style="font-family: var(--font-mono); font-size: 0.82rem; font-weight: 700; color: var(--accent-secondary);">
+                                {{ p.ticket_code }}
+                            </a>
+                        </td>
+                        <td style="padding: 0.75rem 1rem; font-weight: 600; color: var(--text-primary);">
+                            {{ p.participant_name }}
+                        </td>
+                        <td style="padding: 0.75rem 1rem; color: var(--text-secondary); font-size: 0.82rem;">
+                            {{ p.participant_email }}
+                        </td>
+                        <td style="padding: 0.75rem 1rem;">
+                            {% if p.is_checked_in %}
+                                <span class="badge badge-success">✓ Checked In</span>
+                            {% else %}
+                                <span class="badge badge-warning">⏳ Pending</span>
+                            {% endif %}
+                        </td>
+                        <td style="padding: 0.75rem 1rem; font-family: var(--font-mono); font-size: 0.78rem; color: var(--text-muted);">
+                            {% if p.checked_in_at %}
+                                {{ p.checked_in_at|format_dt('%d %b %Y, %I:%M %p') }}
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td style="padding: 0.75rem 1rem; text-align: center;">
+                            <button
+                                type="button"
+                                class="btn btn-secondary btn-sm"
+                                onclick="showParticipantDetail({{ p.id }})"
+                                id="btn-detail-{{ p.id }}"
+                            >
+                                Details
+                            </button>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" style="padding: 3rem; text-align: center; color: var(--text-muted);">
+                            {% if search %}
+                                No participants match "<strong>{{ search }}</strong>". <a href="/admin/participants?event_id={{ event_id }}">Clear search</a>
+                            {% else %}
+                                No registrations yet for this event.
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Participant Detail Modal -->
+<div id="detail-modal" style="display:none; position:fixed; inset:0; z-index:9000; background:rgba(0,0,0,0.7); backdrop-filter:blur(6px); overflow-y:auto;">
+    <div style="max-width: 560px; margin: 4rem auto; padding: 0 1rem;">
+        <div class="card" style="border-color: rgba(124,58,237,0.4); box-shadow: 0 20px 50px rgba(0,0,0,0.7);">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                <h2 style="font-size: 1.2rem;" id="modal-title">Participant Details</h2>
+                <button type="button" onclick="closeModal()" class="btn btn-secondary btn-sm" id="btn-close-modal">✕ Close</button>
+            </div>
+
+            <div id="modal-content" style="font-size: 0.875rem;">
+                <div style="text-align:center; padding: 2rem; color: var(--text-muted);">Loading...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.participant-row:hover { background: rgba(255,255,255,0.03); }
+
+@media (max-width: 768px) {
+    table thead tr th:nth-child(4),
+    table tbody tr td:nth-child(4) { display: none; }
+}
+</style>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+async function showParticipantDetail(id) {
+    const modal = document.getElementById("detail-modal");
+    const content = document.getElementById("modal-content");
+    modal.style.display = "block";
+    content.innerHTML = '<div style="text-align:center;padding:2rem;color:var(--text-muted)">Loading...</div>';
+
+    try {
+        const res = await fetch(`/admin/participants/${id}`);
+        const p = await res.json();
+
+        const checkedBadge = p.is_checked_in
+            ? '<span class="badge badge-success">✓ Checked In</span>'
+            : '<span class="badge badge-warning">⏳ Pending Entry</span>';
+
+        const answersHtml = p.formatted_answers && p.formatted_answers.length
+            ? p.formatted_answers.map(a => `
+                <div style="display:flex;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:0.82rem;">
+                    <span style="color:var(--text-muted);">${a.label}</span>
+                    <span style="font-weight:600;color:var(--text-primary);">${a.value || "—"}</span>
+                </div>`).join("")
+            : '<p style="color:var(--text-muted);font-size:0.82rem;">No custom field answers recorded.</p>';
+
+        content.innerHTML = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem;">
+                <div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:0.2rem;">Name</div>
+                    <div style="font-weight:700;color:var(--text-primary);">${p.participant_name}</div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:0.2rem;">Status</div>
+                    <div>${checkedBadge}</div>
+                </div>
+                <div style="grid-column:1/-1;">
+                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:0.2rem;">Email</div>
+                    <div style="color:var(--text-secondary);">${p.participant_email}</div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:0.2rem;">Phone</div>
+                    <div style="color:var(--text-secondary);">${p.participant_phone || "—"}</div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:0.2rem;">Ticket Code</div>
+                    <a href="/ticket/${p.ticket_code}" target="_blank" style="font-family:var(--font-mono);font-weight:700;color:var(--accent-secondary);font-size:0.85rem;">${p.ticket_code}</a>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:0.2rem;">Registered At</div>
+                    <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);">${(p.registered_at || "").substring(0,16)}</div>
+                </div>
+                <div>
+                    <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:0.2rem;">Check-In Time</div>
+                    <div style="font-family:var(--font-mono);font-size:0.8rem;color:var(--text-muted);">${(p.checked_in_at || "").substring(0,16) || "—"}</div>
+                </div>
+            </div>
+
+            <div style="border-top:1px solid var(--border-subtle);padding-top:1rem;margin-top:0.5rem;">
+                <div style="font-size:0.72rem;color:var(--text-muted);text-transform:uppercase;font-weight:600;margin-bottom:0.5rem;">Custom Field Answers</div>
+                ${answersHtml}
+            </div>
+        `;
+    } catch (e) {
+        content.innerHTML = '<p style="color:var(--status-danger);">Failed to load participant details.</p>';
+    }
+}
+
+function closeModal() {
+    document.getElementById("detail-modal").style.display = "none";
+}
+
+// Close modal on backdrop click
+document.getElementById("detail-modal").addEventListener("click", function(e) {
+    if (e.target === this) closeModal();
+});
+
+// Close on Escape key
+document.addEventListener("keydown", e => {
+    if (e.key === "Escape") closeModal();
+});
+</script>
+{% endblock %}

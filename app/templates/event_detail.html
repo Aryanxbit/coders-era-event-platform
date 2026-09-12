@@ -1,0 +1,315 @@
+{% extends "base.html" %}
+
+{% block title %}{{ event.title }} — Coders Era Events{% endblock %}
+
+{% block content %}
+<div style="max-width: 1100px; margin: 1rem auto 3rem;">
+    <!-- Breadcrumb & Back Link -->
+    <div style="margin-bottom: 1.5rem;">
+        <a href="/" style="display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.9rem; color: var(--text-secondary);">
+            ← Back to All Events
+        </a>
+    </div>
+
+    <!-- Event Hero Header -->
+    <div class="card card-glass" style="margin-bottom: 2rem; padding: 2.25rem; border-color: rgba(124, 58, 237, 0.3);">
+        <div style="display: flex; gap: 0.6rem; margin-bottom: 1rem; flex-wrap: wrap;">
+            <span class="badge badge-cyan">{{ event.category }}</span>
+            <span class="badge badge-success">{{ event.mode|mode_label }}</span>
+            {% if event.is_full %}
+                <span class="badge badge-danger">Capacity Full</span>
+            {% elif event.remaining_spots is not none %}
+                <span class="badge badge-warning font-mono">{{ event.remaining_spots }} Spots Left</span>
+            {% endif %}
+        </div>
+
+        <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.25;">
+            {{ event.title }}
+        </h1>
+        
+        {% if event.tagline %}
+            <p style="font-size: 1.15rem; color: var(--accent-secondary); margin-bottom: 1.5rem; font-weight: 500;">
+                {{ event.tagline }}
+            </p>
+        {% endif %}
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.2rem;">Starts</span>
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">📅 {{ event.start_time|format_dt('full') }}</strong>
+            </div>
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.2rem;">Ends</span>
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">🏁 {{ event.end_time|format_dt('full') }}</strong>
+            </div>
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.2rem;">Venue</span>
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">📍 {{ event.venue }}</strong>
+            </div>
+            <div>
+                <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; display: block; margin-bottom: 0.2rem;">Registration Deadline</span>
+                <strong style="color: var(--text-primary); font-size: 0.95rem;">⏳ {{ event.registration_deadline|format_dt('short') }}</strong>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Grid -->
+    <div style="display: grid; grid-template-columns: 1.2fr 1fr; gap: 2rem; align-items: flex-start;">
+        <!-- Left Column: About, Schedule, Info -->
+        <div>
+            <!-- About -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.35rem; margin-bottom: 1rem; color: var(--text-primary);">About This Event</h2>
+                <div style="color: var(--text-secondary); line-height: 1.7; font-size: 0.95rem; white-space: pre-line;">{{ event.description }}</div>
+            </div>
+
+            <!-- Schedule Timeline -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.35rem; margin-bottom: 1rem; color: var(--text-primary);">📅 Event Schedule</h2>
+                <div style="display: flex; flex-direction: column; gap: 0.85rem; padding-left: 1rem; border-left: 2px solid rgba(124, 58, 237, 0.4);">
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--accent-secondary); font-weight: 600; text-transform: uppercase;">Registration Deadline</div>
+                        <div style="font-size: 0.95rem; color: var(--text-primary); font-weight: 600;">{{ event.registration_deadline|format_dt('full') }}</div>
+                        <div style="font-size: 0.82rem; color: var(--text-muted);">Online registration closes — make sure you sign up before this.</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--accent-secondary); font-weight: 600; text-transform: uppercase;">Check-In Opens</div>
+                        <div style="font-size: 0.95rem; color: var(--text-primary); font-weight: 600;">{{ event.start_time|format_dt('date') }}, Morning</div>
+                        <div style="font-size: 0.82rem; color: var(--text-muted);">Arrive at {{ event.venue }}. Have your QR code ready on your phone or a printed copy.</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--accent-secondary); font-weight: 600; text-transform: uppercase;">Event Begins</div>
+                        <div style="font-size: 0.95rem; color: var(--text-primary); font-weight: 600;">{{ event.start_time|format_dt('full') }}</div>
+                    </div>
+                    <div>
+                        <div style="font-size: 0.75rem; color: var(--accent-secondary); font-weight: 600; text-transform: uppercase;">Event Ends</div>
+                        <div style="font-size: 0.95rem; color: var(--text-primary); font-weight: 600;">{{ event.end_time|format_dt('full') }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Check-In Information -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.35rem; margin-bottom: 1rem; color: var(--text-primary);">🎫 Check-In Process</h2>
+                <ul style="list-style-type: none; display: flex; flex-direction: column; gap: 0.75rem; padding-left: 0; font-size: 0.9rem; color: var(--text-secondary);">
+                    <li style="display: flex; gap: 0.6rem; align-items: flex-start;">
+                        <span style="color: var(--status-success); font-weight: 700;">1.</span>
+                        <span>After you register, you'll get a <strong>digital ticket with a unique QR code</strong>. Save the link or print it.</span>
+                    </li>
+                    <li style="display: flex; gap: 0.6rem; align-items: flex-start;">
+                        <span style="color: var(--status-success); font-weight: 700;">2.</span>
+                        <span>On event day, head to the check-in desk at <strong>{{ event.venue }}</strong> and show your QR code.</span>
+                    </li>
+                    <li style="display: flex; gap: 0.6rem; align-items: flex-start;">
+                        <span style="color: var(--status-success); font-weight: 700;">3.</span>
+                        <span>A volunteer scans it once, and you're in. The whole thing takes a few seconds.</span>
+                    </li>
+                    <li style="display: flex; gap: 0.6rem; align-items: flex-start;">
+                        <span style="color: var(--text-muted);">ℹ️</span>
+                        <span>Each ticket works exactly once — if it's been scanned already, re-entry won't be accepted.</span>
+                    </li>
+                </ul>
+            </div>
+
+            <!-- Eligibility & What to Bring -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.35rem; margin-bottom: 1rem; color: var(--text-primary);">✅ Eligibility & What to Bring</h2>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.25rem; font-size: 0.9rem;">
+                    <div>
+                        <h3 style="font-size: 0.85rem; color: var(--accent-secondary); margin-bottom: 0.5rem; text-transform: uppercase;">Who Can Attend</h3>
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; color: var(--text-secondary);">
+                            <li>• Students from any college or branch</li>
+                            <li>• Working professionals welcome</li>
+                            <li>• No prior experience required</li>
+                        </ul>
+                    </div>
+                    <div>
+                        <h3 style="font-size: 0.85rem; color: var(--accent-secondary); margin-bottom: 0.5rem; text-transform: uppercase;">What to Bring</h3>
+                        <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; color: var(--text-secondary);">
+                            <li>• Your phone with the QR ticket</li>
+                            <li>• Laptop & charger (if applicable)</li>
+                            <li>• Student / Photo ID</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- FAQ -->
+            <div class="card" style="margin-bottom: 1.5rem;">
+                <h2 style="font-size: 1.35rem; margin-bottom: 1rem; color: var(--text-primary);">❓ Frequently Asked Questions</h2>
+                <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.9rem;">
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">Is there a registration fee?</div>
+                        <div style="color: var(--text-secondary);">No — this event is free. You'll receive a digital pass at no cost.</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">Can I register more than once with the same email?</div>
+                        <div style="color: var(--text-secondary);">No. Each email can only be used for one registration per event. If you need to update your details, contact the organizers.</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">I lost my ticket link. How do I get it back?</div>
+                        <div style="color: var(--text-secondary);">Use the <a href="/ticket/retrieve">"Retrieve your ticket"</a> option on the homepage. You'll need your registered email and Ticket Code.</div>
+                    </div>
+                    <div>
+                        <div style="font-weight: 700; color: var(--text-primary); margin-bottom: 0.2rem;">Can someone else check in with my ticket?</div>
+                        <div style="color: var(--text-secondary);">Tickets are non-transferable. The name on the ticket should match the attendee.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Support -->
+            <div class="card">
+                <h2 style="font-size: 1.35rem; margin-bottom: 1rem; color: var(--text-primary);">🛟 Need Help?</h2>
+                <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6;">
+                    If you run into any issues with registration or your ticket, reach out to the event organizers directly.
+                    On event day, volunteers at the check-in desk can help with manual verification if your QR code isn't scanning.
+                </p>
+                <div style="margin-top: 0.75rem; padding: 0.75rem 1rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid var(--border-subtle); font-size: 0.82rem; color: var(--text-muted);">
+                    <strong>Demo Note:</strong> This is a demonstration platform. Contact information would be configured by the organizers for a real event.
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Registration Card & Form -->
+        <div>
+            <div class="card card-glass" style="border: 1px solid rgba(6, 182, 212, 0.35); box-shadow: 0 10px 30px rgba(0,0,0,0.5); position: sticky; top: 5rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+                    <h2 style="font-size: 1.35rem;">Register</h2>
+                    <span class="badge badge-cyan font-mono">Free · Instant</span>
+                </div>
+
+                {% if event.is_full %}
+                    <div style="text-align: center; padding: 2rem 1rem;">
+                        <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🔒</div>
+                        <h3 style="margin-bottom: 0.5rem;">Registrations Closed</h3>
+                        <p style="font-size: 0.9rem; color: var(--text-muted);">
+                            This event has reached its maximum capacity of {{ event.max_capacity }} attendees.
+                        </p>
+                    </div>
+                {% else %}
+                    <form action="/event/{{ event.slug }}/register" method="POST" id="registration-form">
+                        <!-- Full Name -->
+                        <div class="form-group">
+                            <label class="form-label" for="participant_name">
+                                Full Name <span style="color: var(--status-danger);">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="participant_name" 
+                                name="participant_name" 
+                                class="form-control" 
+                                placeholder="e.g. Priya Sharma" 
+                                required 
+                                minlength="2"
+                                maxlength="100"
+                                autocomplete="name"
+                            >
+                        </div>
+
+                        <!-- Email -->
+                        <div class="form-group">
+                            <label class="form-label" for="participant_email">
+                                Email Address <span style="color: var(--status-danger);">*</span>
+                            </label>
+                            <input 
+                                type="email" 
+                                id="participant_email" 
+                                name="participant_email" 
+                                class="form-control" 
+                                placeholder="e.g. priya@example.com" 
+                                required 
+                                autocomplete="email"
+                            >
+                            <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">
+                                One ticket per email. Your pass will be linked to this address.
+                            </span>
+                        </div>
+
+                        <!-- Phone Number -->
+                        <div class="form-group">
+                            <label class="form-label" for="participant_phone">
+                                Phone Number
+                            </label>
+                            <input 
+                                type="tel" 
+                                id="participant_phone" 
+                                name="participant_phone" 
+                                class="form-control" 
+                                placeholder="e.g. +91 98765 43210" 
+                                autocomplete="tel"
+                            >
+                        </div>
+
+                        <!-- Dynamic Custom Fields -->
+                        {% for field in event.custom_fields %}
+                            <div class="form-group">
+                                <label class="form-label" for="custom_{{ field.id }}">
+                                    {{ field.label }}
+                                    {% if field.required %}
+                                        <span style="color: var(--status-danger);">*</span>
+                                    {% endif %}
+                                </label>
+
+                                {% if field.type == 'select' %}
+                                    <select 
+                                        id="custom_{{ field.id }}" 
+                                        name="custom_{{ field.id }}" 
+                                        class="form-control"
+                                        {% if field.required %}required{% endif %}
+                                    >
+                                        <option value="">-- Select an option --</option>
+                                        {% for opt in field.options %}
+                                            <option value="{{ opt }}">{{ opt }}</option>
+                                        {% endfor %}
+                                    </select>
+                                {% elif field.type == 'textarea' %}
+                                    <textarea 
+                                        id="custom_{{ field.id }}" 
+                                        name="custom_{{ field.id }}" 
+                                        class="form-control" 
+                                        rows="3"
+                                        placeholder="{{ field.placeholder or '' }}"
+                                        {% if field.required %}required{% endif %}
+                                    ></textarea>
+                                {% else %}
+                                    <input 
+                                        type="{{ field.type or 'text' }}" 
+                                        id="custom_{{ field.id }}" 
+                                        name="custom_{{ field.id }}" 
+                                        class="form-control" 
+                                        placeholder="{{ field.placeholder or '' }}"
+                                        {% if field.required %}required{% endif %}
+                                    >
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <div style="margin-top: 1.5rem;">
+                            <button type="submit" class="btn btn-primary" style="width: 100%; font-size: 1rem; padding: 0.85rem;" id="btn-submit-registration">
+                                Claim Your Pass →
+                            </button>
+                        </div>
+                    </form>
+
+                    <div style="margin-top: 1rem; text-align: center;">
+                        <a href="/ticket/retrieve" style="font-size: 0.82rem; color: var(--text-muted);">
+                            Already registered? Retrieve your ticket →
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media (max-width: 850px) {
+    div[style*="grid-template-columns: 1.2fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}

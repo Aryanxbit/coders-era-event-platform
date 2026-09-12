@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+
+{% block title %}Retrieve Your Ticket — Coders Era Events{% endblock %}
+
+{% block content %}
+<div style="max-width: 480px; margin: 3rem auto;">
+    <div style="text-align: center; margin-bottom: 2rem;">
+        <h1 style="font-size: 1.75rem; font-weight: 800; margin-bottom: 0.5rem;">Retrieve Your Ticket</h1>
+        <p style="font-size: 0.95rem; color: var(--text-secondary);">
+            Enter your registered email and Ticket Code to pull up your digital pass.
+        </p>
+    </div>
+
+    <div class="card card-glass" style="border-color: rgba(6, 182, 212, 0.35);">
+        <form action="/ticket/retrieve" method="POST" id="retrieve-form">
+            <div class="form-group">
+                <label class="form-label" for="email">Registered Email <span style="color: var(--status-danger);">*</span></label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    class="form-control" 
+                    placeholder="e.g. priya@example.com"
+                    required
+                    autocomplete="email"
+                >
+            </div>
+
+            <div class="form-group">
+                <label class="form-label" for="ticket_code">Ticket Code <span style="color: var(--status-danger);">*</span></label>
+                <input 
+                    type="text" 
+                    id="ticket_code" 
+                    name="ticket_code" 
+                    class="form-control font-mono" 
+                    placeholder="e.g. CE-A4F1-99B2-7C3D"
+                    style="text-transform: uppercase;"
+                    required
+                    autocomplete="off"
+                >
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.25rem;">
+                    This was shown to you when you registered. Check your browser history if you've lost it.
+                </span>
+            </div>
+
+            <div style="margin-top: 1.5rem;">
+                <button type="submit" class="btn btn-primary" style="width: 100%; padding: 0.85rem; font-size: 1rem;" id="btn-retrieve-ticket">
+                    Find My Ticket
+                </button>
+            </div>
+        </form>
+
+        <div style="text-align: center; margin-top: 1.25rem; padding-top: 1rem; border-top: 1px solid var(--border-subtle);">
+            <a href="/" style="font-size: 0.85rem; color: var(--text-muted);">← Back to events</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

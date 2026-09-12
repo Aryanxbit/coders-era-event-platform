@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}Digital Pass — {{ ticket.participant_name }} | {{ ticket.event_title }}{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/ticket.css') }}">
+{% endblock %}
+
+{% block content %}
+<div class="ticket-wrapper">
+    <!-- Action Bar -->
+    <div class="ticket-actions-bar">
+        <div>
+            <a href="/event/{{ ticket.event_slug }}" class="btn btn-secondary btn-sm" id="btn-back-event">
+                ← Back to Event Page
+            </a>
+        </div>
+        <div style="display: flex; gap: 0.75rem;">
+            <button onclick="window.print()" class="btn btn-primary btn-sm" id="btn-print-ticket">
+                🖨️ Print / Save as PDF
+            </button>
+        </div>
+    </div>
+
+    <!-- Boarding Pass Container -->
+    <div class="boarding-pass" id="digital-ticket-pass">
+        <!-- Main Pass Info (Left) -->
+        <div class="ticket-main">
+            <!-- Header -->
+            <div class="ticket-header">
+                <div class="ticket-event-tag">
+                    <span class="badge badge-cyan">{{ ticket.event_category }}</span>
+                    <span class="badge badge-success">{{ ticket.event_mode|mode_label }}</span>
+                    {% if ticket.is_checked_in %}
+                        <span class="badge badge-warning">Already Checked In</span>
+                    {% else %}
+                        <span class="badge badge-success">✓ Confirmed</span>
+                    {% endif %}
+                </div>
+                <h1 class="ticket-event-title">{{ ticket.event_title }}</h1>
+                {% if ticket.event_tagline %}
+                    <p class="ticket-event-tagline">{{ ticket.event_tagline }}</p>
+                {% endif %}
+            </div>
+
+            <!-- Attendee Details & Logistics Grid -->
+            <div class="ticket-grid">
+                <div>
+                    <div class="ticket-label">Attendee Name</div>
+                    <div class="ticket-value highlight" id="ticket-attendee-name">{{ ticket.participant_name }}</div>
+                </div>
+                <div>
+                    <div class="ticket-label">Registered Email</div>
+                    <div class="ticket-value" style="font-size: 0.95rem;">{{ ticket.participant_email }}</div>
+                </div>
+                <div>
+                    <div class="ticket-label">Event Date & Time</div>
+                    <div class="ticket-value">{{ ticket.event_start_time|format_dt('short') }}</div>
+                </div>
+                <div>
+                    <div class="ticket-label">Venue / Hall</div>
+                    <div class="ticket-value">{{ ticket.event_venue }}</div>
+                </div>
+                {% if ticket.participant_phone %}
+                <div>
+                    <div class="ticket-label">Contact Phone</div>
+                    <div class="ticket-value" style="font-size: 0.95rem;">{{ ticket.participant_phone }}</div>
+                </div>
+                {% endif %}
+                <div>
+                    <div class="ticket-label">Registered On</div>
+                    <div class="ticket-value font-mono" style="font-size: 0.85rem; color: var(--text-muted);">
+                        {{ ticket.registered_at|format_dt('short') }}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dynamic Custom Question Responses (if present) -->
+            {% if ticket.formatted_answers %}
+                <div class="custom-answers-box">
+                    <div class="ticket-label" style="margin-bottom: 0.4rem;">Registration Details</div>
+                    {% for ans in ticket.formatted_answers %}
+                        <div class="custom-answer-item">
+                            <span style="color: var(--text-muted); font-size: 0.8rem;">{{ ans.label }}:</span>
+                            <span style="font-weight: 600; color: var(--text-primary); font-size: 0.85rem;">{{ ans.value }}</span>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+
+            <!-- Footer Note -->
+            <div style="margin-top: 1.5rem; font-size: 0.75rem; color: var(--text-muted); border-top: 1px solid var(--border-subtle); padding-top: 0.75rem;">
+                Present this digital pass on your phone or bring a printed copy to the entrance gate.
+            </div>
+        </div>
+
+        <!-- Stub with QR Code (Right) -->
+        <div class="ticket-stub">
+            <div class="ticket-label" style="margin-bottom: 0.75rem;">Entry QR Code</div>
+            
+            <div class="qr-container">
+                <img 
+                    src="{{ ticket.qr_data_url }}" 
+                    alt="Entry QR Code for {{ ticket.participant_name }}" 
+                    class="qr-image"
+                    id="ticket-qr-img"
+                >
+            </div>
+
+            <div class="ticket-code-display" id="display-ticket-code">
+                {{ ticket.ticket_code }}
+            </div>
+
+            <div class="ticket-security-hint">
+                One-time entry pass.<br>
+                Scan at the check-in desk.
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

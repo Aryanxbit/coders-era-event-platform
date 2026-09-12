@@ -1,0 +1,273 @@
+/* ==========================================================================
+   Coders Era Event Platform — Digital Ticket & Boarding Pass Stylesheet
+   High-craft aesthetic with print & mobile optimization
+   ========================================================================== */
+
+.ticket-wrapper {
+  max-width: 860px;
+  margin: 1.5rem auto 3rem;
+  padding: 0 1rem;
+}
+
+.ticket-actions-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+/* Boarding Pass Container */
+.boarding-pass {
+  background: linear-gradient(145deg, #0e1424 0%, #151c30 100%);
+  border: 1px solid rgba(124, 58, 237, 0.35);
+  border-radius: 20px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6), 0 0 30px rgba(124, 58, 237, 0.15);
+  overflow: hidden;
+  position: relative;
+  display: grid;
+  grid-template-columns: 1fr 300px;
+}
+
+/* Left Main Section */
+.ticket-main {
+  padding: 2.25rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  position: relative;
+}
+
+/* Header */
+.ticket-header {
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.12);
+  padding-bottom: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+
+.ticket-event-tag {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.ticket-event-title {
+  font-size: 1.6rem;
+  font-weight: 800;
+  color: #ffffff;
+  line-height: 1.25;
+  margin-bottom: 0.35rem;
+}
+
+.ticket-event-tagline {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+/* Info Grid */
+.ticket-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.25rem 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.ticket-label {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  font-weight: 600;
+  margin-bottom: 0.25rem;
+}
+
+.ticket-value {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  word-break: break-word;
+}
+
+.ticket-value.highlight {
+  color: var(--accent-secondary);
+}
+
+/* Perforation Divider */
+.ticket-divider {
+  position: relative;
+  background: rgba(255, 255, 255, 0.08);
+  width: 2px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Side Stub Section */
+.ticket-stub {
+  background: rgba(10, 15, 26, 0.65);
+  border-left: 2px dashed rgba(255, 255, 255, 0.12);
+  padding: 2.25rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+}
+
+/* Top and bottom punch notches */
+.ticket-stub::before, .ticket-stub::after {
+  content: "";
+  position: absolute;
+  left: -14px;
+  width: 26px;
+  height: 26px;
+  background-color: var(--bg-deep);
+  border-radius: 50%;
+  z-index: 2;
+  box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.6);
+}
+
+.ticket-stub::before {
+  top: -13px;
+  border-bottom: 1px solid rgba(124, 58, 237, 0.35);
+}
+
+.ticket-stub::after {
+  bottom: -13px;
+  border-top: 1px solid rgba(124, 58, 237, 0.35);
+}
+
+/* QR Code Box */
+.qr-container {
+  background: #ffffff;
+  padding: 0.85rem;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  margin-bottom: 1rem;
+  display: inline-block;
+  line-height: 0;
+}
+
+.qr-image {
+  width: 170px;
+  height: 170px;
+  display: block;
+}
+
+.ticket-code-display {
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  background: rgba(255, 255, 255, 0.06);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  letter-spacing: 0.05em;
+  border: 1px solid var(--border-subtle);
+  margin-bottom: 0.5rem;
+}
+
+.ticket-security-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+/* Custom Question Answers Block */
+.custom-answers-box {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-subtle);
+  border-radius: 8px;
+  padding: 0.85rem 1rem;
+  margin-top: 1rem;
+}
+
+.custom-answer-item {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+  padding: 0.25rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+.custom-answer-item:last-child {
+  border-bottom: none;
+}
+
+/* Responsive Stacking */
+@media (max-width: 768px) {
+  .boarding-pass {
+    grid-template-columns: 1fr;
+  }
+  
+  .ticket-stub {
+    border-left: none;
+    border-top: 2px dashed rgba(255, 255, 255, 0.12);
+    padding: 2rem 1.5rem;
+  }
+
+  .ticket-stub::before, .ticket-stub::after {
+    left: auto;
+    width: 26px;
+    height: 26px;
+  }
+
+  .ticket-stub::before {
+    top: -13px;
+    left: -13px;
+  }
+
+  .ticket-stub::after {
+    top: -13px;
+    right: -13px;
+    bottom: auto;
+  }
+}
+
+/* Print Friendly Styles */
+@media print {
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+
+  .navbar, .footer, .ticket-actions-bar, .flash-container {
+    display: none !important;
+  }
+
+  .ticket-wrapper {
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .boarding-pass {
+    background: #ffffff !important;
+    color: #000000 !important;
+    border: 2px solid #000000 !important;
+    box-shadow: none !important;
+    page-break-inside: avoid;
+  }
+
+  .ticket-event-title, .ticket-value, .ticket-code-display {
+    color: #000000 !important;
+  }
+
+  .ticket-label, .ticket-event-tagline, .ticket-security-hint {
+    color: #555555 !important;
+  }
+
+  .ticket-stub {
+    background: #f9f9f9 !important;
+    border-left: 2px dashed #000000 !important;
+  }
+
+  .qr-container {
+    box-shadow: none !important;
+    border: 1px solid #ccc !important;
+  }
+}

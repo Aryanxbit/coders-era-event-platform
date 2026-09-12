@@ -1,0 +1,461 @@
+{% extends "base.html" %}
+
+{% block title %}Fast QR Gate Scanner & Verification — Coders Era{% endblock %}
+
+{% block content %}
+<div style="max-width: 900px; margin: 1rem auto 3rem;">
+    <!-- Top Header -->
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; flex-wrap: wrap; gap: 1rem;">
+        <div>
+            <h1 style="font-size: 1.75rem; font-weight: 800; display: flex; align-items: center; gap: 0.5rem;">
+                <span>📷 Gate Check-In Scanner</span>
+                <span class="badge badge-cyan font-mono">Atomic Verification</span>
+            </h1>
+            <p style="font-size: 0.9rem; color: var(--text-secondary);">
+                Scan attendee digital badges via camera or verify ticket codes manually.
+            </p>
+        </div>
+        <div>
+            {% if session.get('user_role') in ['admin', 'organizer'] %}
+                <a href="/admin/dashboard" class="btn btn-secondary btn-sm" id="btn-back-dashboard">
+                    ← Back to Dashboard
+                </a>
+            {% else %}
+                <span class="badge badge-cyan font-mono" style="padding: 0.5rem 0.85rem; font-size: 0.8rem;">
+                    🛡️ Gate Volunteer Station
+                </span>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Event Selector Filter -->
+    <div class="card card-glass" style="margin-bottom: 1.5rem; padding: 1.25rem;">
+        <div style="display: flex; align-items: center; gap: 1rem; flex-wrap: wrap;">
+            <label for="scanner-event-select" style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); white-space: nowrap;">
+                Active Check-in Event:
+            </label>
+            <select id="scanner-event-select" class="form-control" style="flex: 1; min-width: 260px;">
+                {% for ev in events %}
+                    <option value="{{ ev.id }}" {% if ev.id == selected_event_id %}selected{% endif %}>
+                        {{ ev.title }} ({{ ev.venue }})
+                    </option>
+                {% else %}
+                    <option value="">No active events found</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+
+    <!-- Main Scanner & Feedback Layout -->
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; align-items: start;">
+        
+        <!-- Left: Camera Viewfinder & Manual Input -->
+        <div class="card card-glass" style="border-color: rgba(124, 58, 237, 0.3);">
+            <h2 style="font-size: 1.2rem; margin-bottom: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <span>Live Camera Scanner</span>
+                <span id="scanner-status-indicator" class="badge badge-warning" style="font-size: 0.7rem;">Camera Standby</span>
+            </h2>
+
+            <!-- QR Reader Viewfinder -->
+            <div id="reader-container" style="background: #000000; border-radius: 12px; overflow: hidden; min-height: 240px; display: flex; align-items: center; justify-content: center; position: relative; border: 1px solid var(--border-subtle); margin-bottom: 1rem;">
+                <div id="reader" style="width: 100%;"></div>
+                <div id="camera-placeholder" style="text-align: center; padding: 2rem 1rem; color: var(--text-muted);">
+                    <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">📷</div>
+                    <p style="font-size: 0.85rem;">Click "Start Camera" to activate live QR scanning</p>
+                </div>
+            </div>
+
+            <!-- Camera Controls -->
+            <div style="display: flex; gap: 0.75rem; margin-bottom: 1.5rem;">
+                <button type="button" class="btn btn-primary btn-sm" id="btn-start-camera" style="flex: 1;">
+                    ▶ Start Camera
+                </button>
+                <button type="button" class="btn btn-secondary btn-sm" id="btn-stop-camera" style="flex: 1; display: none;">
+                    ⏹ Stop Camera
+                </button>
+            </div>
+
+            <hr style="border: 0; border-top: 1px solid var(--border-subtle); margin: 1.25rem 0;">
+
+            <!-- Manual Ticket ID Fallback -->
+            <div>
+                <label class="form-label" for="manual-code-input">
+                    Manual Ticket Code Entry
+                </label>
+                <form id="manual-verify-form" style="display: flex; gap: 0.5rem;">
+                    <input 
+                        type="text" 
+                        id="manual-code-input" 
+                        class="form-control font-mono" 
+                        placeholder="e.g. CE-A4F1-99B2-7C3D" 
+                        style="text-transform: uppercase;"
+                        required
+                    >
+                    <button type="submit" class="btn btn-primary" id="btn-manual-verify" style="white-space: nowrap;">
+                        Verify
+                    </button>
+                </form>
+                <span style="font-size: 0.75rem; color: var(--text-muted); display: block; margin-top: 0.35rem;">
+                    Type or paste the 12-character Ticket ID or secret token.
+                </span>
+            </div>
+        </div>
+
+        <!-- Right: Real-time Verification Feedback Card -->
+        <div>
+            <div class="card card-glass" id="verification-card" style="min-height: 380px; display: flex; flex-direction: column; justify-content: space-between; border-width: 2px; border-color: var(--border-subtle); transition: all 0.3s ease;">
+                <!-- Result Header -->
+                <div>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <span style="font-size: 0.75rem; text-transform: uppercase; font-weight: 700; color: var(--text-muted); letter-spacing: 0.05em;">
+                            Verification Feedback
+                        </span>
+                        <span id="feedback-badge" class="badge badge-secondary" style="font-size: 0.75rem;">Awaiting Scan</span>
+                    </div>
+
+                    <!-- Visual Icon & Message -->
+                    <div id="feedback-body" style="text-align: center; padding: 2.5rem 1rem;">
+                        <div id="feedback-icon" style="font-size: 3.5rem; margin-bottom: 0.75rem;">🎫</div>
+                        <h3 id="feedback-title" style="font-size: 1.3rem; margin-bottom: 0.5rem; color: var(--text-primary);">
+                            Ready to Scan
+                        </h3>
+                        <p id="feedback-message" style="font-size: 0.9rem; color: var(--text-secondary); max-width: 320px; margin: 0 auto;">
+                            Align an attendee's QR code in the camera frame or enter their Ticket ID manually.
+                        </p>
+                    </div>
+
+                    <!-- Attendee Details Box (Hidden by default) -->
+                    <div id="attendee-details-box" style="display: none; background: rgba(0,0,0,0.3); border: 1px solid var(--border-subtle); border-radius: 8px; padding: 1rem; margin-top: 1rem;">
+                        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; font-size: 0.85rem;">
+                            <div>
+                                <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">NAME</span>
+                                <strong id="res-name" style="color: var(--text-primary); font-size: 0.95rem;">-</strong>
+                            </div>
+                            <div>
+                                <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">TICKET CODE</span>
+                                <strong id="res-code" class="font-mono" style="color: var(--accent-secondary);">-</strong>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">EMAIL</span>
+                                <span id="res-email" style="color: var(--text-secondary);">-</span>
+                            </div>
+                            <div style="grid-column: 1 / -1;">
+                                <span style="color: var(--text-muted); display: block; font-size: 0.72rem;">CHECK-IN TIME</span>
+                                <span id="res-time" class="font-mono" style="color: var(--text-muted);">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer Quick Action -->
+                <div style="padding-top: 1rem; border-top: 1px solid var(--border-subtle); display: flex; justify-content: space-between; align-items: center;">
+                    <span style="font-size: 0.75rem; color: var(--text-muted);" id="scan-latency-display">Latency: - ms</span>
+                    <button type="button" class="btn btn-secondary btn-sm" id="btn-reset-feedback" onclick="resetFeedbackState()">
+                        Ready for Next Scan
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Scans Live Feed Table -->
+    <div class="card" style="margin-top: 2rem;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+            <h3 style="font-size: 1.15rem;">Recent Check-in Activity</h3>
+            <button type="button" class="btn btn-secondary btn-sm" onclick="loadRecentLogs()">↻ Refresh Feed</button>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+                <thead>
+                    <tr style="border-bottom: 1px solid var(--border-subtle); color: var(--text-muted);">
+                        <th style="padding: 0.6rem 0.75rem;">Time</th>
+                        <th style="padding: 0.6rem 0.75rem;">Scanned Code</th>
+                        <th style="padding: 0.6rem 0.75rem;">Attendee</th>
+                        <th style="padding: 0.6rem 0.75rem;">Status</th>
+                        <th style="padding: 0.6rem 0.75rem;">Scanned By</th>
+                    </tr>
+                </thead>
+                <tbody id="recent-logs-tbody">
+                    <tr>
+                        <td colspan="5" style="padding: 1.5rem; text-align: center; color: var(--text-muted);">
+                            Loading recent activity...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<style>
+@media (max-width: 768px) {
+    div[style*="grid-template-columns: 1fr 1fr"] {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- Lightweight HTML5 QR Code Scanner library -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+
+<script>
+let html5QrCode = null;
+let isScanning = false;
+let isProcessing = false;
+
+const eventSelect = document.getElementById("scanner-event-select");
+const manualForm = document.getElementById("manual-verify-form");
+const manualInput = document.getElementById("manual-code-input");
+const btnStartCamera = document.getElementById("btn-start-camera");
+const btnStopCamera = document.getElementById("btn-stop-camera");
+const cameraPlaceholder = document.getElementById("camera-placeholder");
+const scannerStatus = document.getElementById("scanner-status-indicator");
+
+// Feedback elements
+const verificationCard = document.getElementById("verification-card");
+const feedbackBadge = document.getElementById("feedback-badge");
+const feedbackIcon = document.getElementById("feedback-icon");
+const feedbackTitle = document.getElementById("feedback-title");
+const feedbackMessage = document.getElementById("feedback-message");
+const attendeeBox = document.getElementById("attendee-details-box");
+const resName = document.getElementById("res-name");
+const resCode = document.getElementById("res-code");
+const resEmail = document.getElementById("res-email");
+const resTime = document.getElementById("res-time");
+const latencyDisplay = document.getElementById("scan-latency-display");
+const recentTbody = document.getElementById("recent-logs-tbody");
+
+function resetFeedbackState() {
+    verificationCard.style.borderColor = "var(--border-subtle)";
+    verificationCard.style.boxShadow = "none";
+    feedbackBadge.className = "badge badge-secondary";
+    feedbackBadge.textContent = "Awaiting Scan";
+    feedbackIcon.textContent = "🎫";
+    feedbackTitle.style.color = "var(--text-primary)";
+    feedbackTitle.textContent = "Ready to Scan";
+    feedbackMessage.textContent = "Align an attendee's QR code in the camera frame or enter their Ticket ID manually.";
+    attendeeBox.style.display = "none";
+    isProcessing = false;
+}
+
+async function verifyPayload(codeString) {
+    if (isProcessing) return;
+    isProcessing = true;
+
+    const startTime = performance.now();
+    const eventId = eventSelect.value;
+
+    feedbackBadge.className = "badge badge-info";
+    feedbackBadge.textContent = "Verifying...";
+    feedbackTitle.textContent = "Validating Ticket...";
+    feedbackMessage.textContent = "Querying atomic verification engine...";
+
+    try {
+        const response = await fetch("/api/checkin/verify", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Accept": "application/json"
+            },
+            body: JSON.stringify({
+                code: codeString,
+                event_id: eventId ? parseInt(eventId) : null
+            })
+        });
+
+        const latency = Math.round(performance.now() - startTime);
+        latencyDisplay.textContent = `Latency: ${latency} ms`;
+
+        const data = await response.json();
+
+        if (response.status === 200 && data.status === "SUCCESS") {
+            // SUCCESS
+            verificationCard.style.borderColor = "var(--status-success)";
+            verificationCard.style.boxShadow = "0 0 25px rgba(16, 185, 129, 0.25)";
+            feedbackBadge.className = "badge badge-success";
+            feedbackBadge.textContent = "✓ VERIFIED";
+            feedbackIcon.textContent = "✅";
+            feedbackTitle.style.color = "var(--status-success)";
+            feedbackTitle.textContent = "Check-In Approved!";
+            feedbackMessage.textContent = data.message;
+
+            if (data.ticket) {
+                attendeeBox.style.display = "block";
+                resName.textContent = data.ticket.participant_name || "-";
+                resCode.textContent = data.ticket.ticket_code || "-";
+                resEmail.textContent = data.ticket.participant_email || "-";
+                resTime.textContent = data.ticket.checked_in_at || "Just now";
+            }
+        } else if (response.status === 409 || data.status === "ALREADY_USED") {
+            // ALREADY USED / CONFLICT
+            verificationCard.style.borderColor = "var(--status-warning)";
+            verificationCard.style.boxShadow = "0 0 25px rgba(245, 158, 11, 0.25)";
+            feedbackBadge.className = "badge badge-warning";
+            feedbackBadge.textContent = "⚠ ALREADY USED";
+            feedbackIcon.textContent = "⚠️";
+            feedbackTitle.style.color = "var(--status-warning)";
+            feedbackTitle.textContent = "Entry Denied: Already Used";
+            feedbackMessage.textContent = data.message;
+
+            if (data.ticket) {
+                attendeeBox.style.display = "block";
+                resName.textContent = data.ticket.participant_name || "-";
+                resCode.textContent = data.ticket.ticket_code || "-";
+                resEmail.textContent = data.ticket.participant_email || "-";
+                resTime.textContent = data.ticket.checked_in_at || "Prior scan";
+            }
+        } else if (data.status === "EVENT_MISMATCH") {
+            // EVENT MISMATCH
+            verificationCard.style.borderColor = "var(--status-danger)";
+            verificationCard.style.boxShadow = "0 0 25px rgba(239, 68, 68, 0.25)";
+            feedbackBadge.className = "badge badge-danger";
+            feedbackBadge.textContent = "✕ EVENT MISMATCH";
+            feedbackIcon.textContent = "🚫";
+            feedbackTitle.style.color = "var(--status-danger)";
+            feedbackTitle.textContent = "Wrong Event Ticket";
+            feedbackMessage.textContent = data.message;
+            attendeeBox.style.display = "none";
+        } else {
+            // INVALID TICKET / 404
+            verificationCard.style.borderColor = "var(--status-danger)";
+            verificationCard.style.boxShadow = "0 0 25px rgba(239, 68, 68, 0.25)";
+            feedbackBadge.className = "badge badge-danger";
+            feedbackBadge.textContent = "✕ INVALID TICKET";
+            feedbackIcon.textContent = "❌";
+            feedbackTitle.style.color = "var(--status-danger)";
+            feedbackTitle.textContent = "Unrecognized Ticket";
+            feedbackMessage.textContent = data.message || "The scanned code is not in the system.";
+            attendeeBox.style.display = "none";
+        }
+
+        loadRecentLogs();
+
+        // Auto-unlock scanner processing after 2.5 seconds
+        setTimeout(() => {
+            isProcessing = false;
+        }, 2500);
+
+    } catch (err) {
+        console.error("Verification error:", err);
+        feedbackBadge.className = "badge badge-danger";
+        feedbackBadge.textContent = "Network Error";
+        feedbackTitle.textContent = "Connection Failure";
+        feedbackMessage.textContent = "Unable to connect to verification server.";
+        isProcessing = false;
+    }
+}
+
+// Manual Form Handler
+manualForm.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const code = manualInput.value.trim();
+    if (!code) return;
+    verifyPayload(code);
+    manualInput.value = "";
+});
+
+// Camera Scanner Controls
+btnStartCamera.addEventListener("click", () => {
+    if (typeof Html5Qrcode === "undefined") {
+        alert("Camera scanner library is loading. Please try again in a moment or use manual code entry.");
+        return;
+    }
+
+    html5QrCode = new Html5Qrcode("reader");
+    cameraPlaceholder.style.display = "none";
+
+    const config = { fps: 10, qrbox: { width: 220, height: 220 } };
+
+    html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        (decodedText, decodedResult) => {
+            if (!isProcessing) {
+                verifyPayload(decodedText);
+            }
+        },
+        (errorMessage) => {
+            // Standard scan miss, no action needed
+        }
+    ).then(() => {
+        isScanning = true;
+        btnStartCamera.style.display = "none";
+        btnStopCamera.style.display = "inline-flex";
+        scannerStatus.className = "badge badge-success";
+        scannerStatus.textContent = "Camera Active";
+    }).catch(err => {
+        console.error("Camera start failed:", err);
+        cameraPlaceholder.style.display = "block";
+        cameraPlaceholder.innerHTML = `<div style="color: var(--status-danger);">Camera permission denied or camera not found.<br>Please use manual Ticket ID entry.</div>`;
+        scannerStatus.className = "badge badge-danger";
+        scannerStatus.textContent = "Camera Error";
+    });
+});
+
+btnStopCamera.addEventListener("click", () => {
+    if (html5QrCode && isScanning) {
+        html5QrCode.stop().then(() => {
+            isScanning = false;
+            btnStartCamera.style.display = "inline-flex";
+            btnStopCamera.style.display = "none";
+            cameraPlaceholder.style.display = "block";
+            scannerStatus.className = "badge badge-warning";
+            scannerStatus.textContent = "Camera Standby";
+        }).catch(err => console.error("Error stopping camera", err));
+    }
+});
+
+async function loadRecentLogs() {
+    const eventId = eventSelect.value;
+    try {
+        const url = eventId ? `/api/checkin/recent?event_id=${eventId}` : `/api/checkin/recent`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.logs && data.logs.length > 0) {
+            recentTbody.innerHTML = data.logs.map(log => {
+                let badgeClass = "badge-secondary";
+                if (log.status === "SUCCESS") badgeClass = "badge-success";
+                else if (log.status === "ALREADY_USED") badgeClass = "badge-warning";
+                else if (log.status === "INVALID_TICKET" || log.status === "EVENT_MISMATCH") badgeClass = "badge-danger";
+
+                return `
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.05);">
+                        <td style="padding: 0.6rem 0.75rem; font-family: var(--font-mono); color: var(--text-muted);">
+                            ${log.timestamp ? log.timestamp.substring(11, 19) : "-"}
+                        </td>
+                        <td style="padding: 0.6rem 0.75rem; font-family: var(--font-mono); font-weight: 600;">
+                            ${log.scanned_code || "-"}
+                        </td>
+                        <td style="padding: 0.6rem 0.75rem;">
+                            ${log.participant_name || "<span style='color:var(--text-muted)'>N/A</span>"}
+                        </td>
+                        <td style="padding: 0.6rem 0.75rem;">
+                            <span class="badge ${badgeClass}">${log.status}</span>
+                        </td>
+                        <td style="padding: 0.6rem 0.75rem; color: var(--text-muted);">
+                            ${log.volunteer_name || "Staff"}
+                        </td>
+                    </tr>
+                `;
+            }).join("");
+        } else {
+            recentTbody.innerHTML = `<tr><td colspan="5" style="padding: 1.5rem; text-align: center; color: var(--text-muted);">No scan logs recorded yet for this event.</td></tr>`;
+        }
+    } catch (e) {
+        console.error("Failed to load recent logs", e);
+    }
+}
+
+eventSelect.addEventListener("change", () => {
+    resetFeedbackState();
+    loadRecentLogs();
+});
+
+// Initial load
+loadRecentLogs();
+</script>
+{% endblock %}
