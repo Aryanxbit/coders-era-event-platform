@@ -136,8 +136,9 @@ def create_event():
     venue = request.form.get("venue", "").strip() or "Main Auditorium"
     start_time = request.form.get("start_time", "").strip()
     end_time = request.form.get("end_time", "").strip()
-    reg_deadline = request.form.get("registration_deadline", "").strip() or start_time
-    max_capacity = int(request.form.get("max_capacity", 0) or 0)
+    reg_start = request.form.get("registration_start", "").strip()
+    reg_deadline = request.form.get("registration_deadline", "").strip()
+    max_capacity = request.form.get("max_capacity", "0").strip()
 
     # Dynamic custom fields from JSON builder
     custom_fields_raw = request.form.get("custom_fields_json", "[]")
@@ -151,12 +152,12 @@ def create_event():
     db.execute("""
         INSERT INTO events (
             uuid, slug, title, tagline, description, category, mode,
-            venue, start_time, end_time, registration_deadline,
+            venue, start_time, end_time, registration_start, registration_deadline,
             max_capacity, status, custom_fields_json, created_by
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?)
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?)
     """, (
         str(uuid.uuid4()), slug, title, tagline, description, category, mode,
-        venue, start_time, end_time, reg_deadline, max_capacity,
+        venue, start_time, end_time, reg_start, reg_deadline, max_capacity,
         json.dumps(custom_fields), session["user_id"]
     ))
     db.commit()

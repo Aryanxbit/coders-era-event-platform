@@ -152,9 +152,9 @@ def seed_database(db_path=None, interactive=False):
         cursor.execute("""
             INSERT INTO events (
                 uuid, slug, title, tagline, description, category, mode,
-                venue, start_time, end_time, registration_deadline,
+                venue, start_time, end_time, registration_start, registration_deadline,
                 max_capacity, status, custom_fields_json, created_by
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?)
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published', ?, ?)
         """, (
             str(uuid.uuid4()),
             sample_event_slug,
@@ -166,7 +166,8 @@ def seed_database(db_path=None, interactive=False):
             "Main Auditorium & Innovation Lab, Tech Campus",
             "2026-09-25 09:00:00",
             "2026-09-26 17:00:00",
-            "2026-09-24 23:59:59",
+            "2026-09-10 09:00:00",
+            "2026-09-23 09:00:00",
             300,
             json.dumps(custom_fields),
             admin_id
@@ -175,7 +176,19 @@ def seed_database(db_path=None, interactive=False):
         print(f"[+] Created Demo Event: Automate India Hackathon 2026 (Slug: {sample_event_slug})")
     else:
         event_id = event_row["id"]
-        print(f"[*] Demo Event already exists (ID: {event_id})")
+
+        cursor.execute("""
+            UPDATE events
+            SET registration_start = ?,
+                registration_deadline = ?
+            WHERE id = ?
+    """, (
+        "2026-09-10 09:00:00",
+        "2026-09-23 09:00:00",
+        event_id
+    ))
+
+    print(f"[*] Updated Demo Event registration window (ID: {event_id})")
 
     # 3. Seed Sample Attendee Registrations
     sample_attendees = [

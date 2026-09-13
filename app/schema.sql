@@ -27,6 +27,7 @@ CREATE TABLE IF NOT EXISTS events (
     venue TEXT NOT NULL,
     start_time DATETIME NOT NULL,
     end_time DATETIME NOT NULL,
+    registration_start DATETIME,
     registration_deadline DATETIME NOT NULL,
     max_capacity INTEGER DEFAULT 0,
     status TEXT CHECK(status IN ('draft', 'published', 'closed', 'archived')) DEFAULT 'published',

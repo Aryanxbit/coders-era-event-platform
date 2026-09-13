@@ -40,7 +40,7 @@ def close_db(e=None):
         db.close()
 
 def init_db(db_path=None):
-    """Initialize the database schema from schema.sql."""
+    """Initialize the database schema and apply lightweight migrations."""
     if db_path is None:
         from app.config import Config
         db_path = Config.DATABASE_PATH
@@ -52,7 +52,25 @@ def init_db(db_path=None):
     
     with open(SCHEMA_PATH, "r", encoding="utf-8") as f:
         cursor.executescript(f.read())
-        
+
+    # Add registration_start to existing databases if it does not exist.
+    columns = {
+        row["name"]
+        for row in cursor.execute("PRAGMA table_info(events)").fetchall()
+    }
+
+    if "registration_start" not in columns:
+        cursor.execute(
+            "ALTER TABLE events ADD COLUMN registration_start DATETIME"
+        )
+
+        # Give existing events a sensible registration opening time.
+        cursor.execute("""
+            UPDATE events
+            SET registration_start = datetime(start_time, '-30 days')
+            WHERE registration_start IS NULL
+        """)
+
     conn.commit()
     conn.close()
 

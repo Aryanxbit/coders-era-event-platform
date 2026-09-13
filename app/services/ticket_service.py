@@ -6,6 +6,7 @@ import secrets
 import sqlite3
 import qrcode
 from app.db import get_db
+from datetime import datetime
 
 TICKET_CODE_REGEX = re.compile(r"^CE-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}$")
 EMAIL_REGEX = re.compile(r"^[\w\.\+\-]+@[a-zA-Z0-9\-]+\.[a-zA-Z0-9\-\.]+$")
@@ -108,6 +109,24 @@ def register_participant(event_id: int, form_data: dict) -> tuple[bool, str, dic
 
     if event["status"] != "published":
         return False, f"Event is currently {event['status']} and not accepting registrations.", None
+        # Enforce the registration window.
+    now = datetime.now()
+
+    if event["registration_start"]:
+        registration_start = datetime.fromisoformat(
+            event["registration_start"].replace("Z", "")
+        )
+
+        if now < registration_start:
+            return False, "Registration has not opened yet for this event.", None
+
+    if event["registration_deadline"]:
+        registration_deadline = datetime.fromisoformat(
+            event["registration_deadline"].replace("Z", "")
+        )
+
+        if now > registration_deadline:
+            return False, "Registration for this event has closed.", None
 
     # Check capacity limit if set (> 0)
     if event["max_capacity"] and event["max_capacity"] > 0:

@@ -386,6 +386,18 @@ code, .font-mono {
   color: var(--text-muted);
 }
 
+.footer-text a {
+  color: var(--accent-secondary);
+  font-weight: 500;
+  text-decoration: none;
+  transition: color var(--transition-fast);
+}
+
+.footer-text a:hover {
+  color: var(--accent-primary-hover);
+  text-decoration: underline;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   h1 { font-size: 1.75rem; }

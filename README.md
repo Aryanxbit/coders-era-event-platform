@@ -151,3 +151,11 @@ Follow these steps during your project demonstration or interview:
 - [ARCHITECTURE.md](file:///c:/Users/Aryan%20Gupta/coders-era-event-platform/ARCHITECTURE.md) — System architecture, ERD, API contracts, and concurrency proofs.
 - [DECISIONS.md](file:///c:/Users/Aryan%20Gupta/coders-era-event-platform/DECISIONS.md) — Architectural Decision Records (ADRs 001–008).
 - [TODO.md](file:///c:/Users/Aryan%20Gupta/coders-era-event-platform/TODO.md) — Phased MVP task tracker and Development Freeze policy.
+
+---
+
+## Author
+
+Built by Aryan Gupta for the Coders Era Club Selection Process (2026).
+
+GitHub: https://github.com/Aryanxbit

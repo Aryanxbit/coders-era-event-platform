@@ -72,17 +72,51 @@
                 <input type="number" id="ev-capacity" name="max_capacity" class="form-control font-mono" value="150" min="0">
             </div>
 
-            <!-- Start Time -->
-            <div class="form-group">
-                <label class="form-label" for="ev-start">Start Date & Time *</label>
-                <input type="datetime-local" id="ev-start" name="start_time" class="form-control" required>
-            </div>
+<!-- Registration Opens -->
+<div class="form-group">
+    <label class="form-label" for="ev-registration-start">Registration Opens *</label>
+    <input type="datetime-local"
+           id="ev-registration-start"
+           name="registration_start"
+           class="form-control"
+           required>
+    <small style="color: var(--text-muted);">
+        Participants can register from this time onward.
+    </small>
+</div>
 
-            <!-- End Time -->
-            <div class="form-group">
-                <label class="form-label" for="ev-end">End Date & Time *</label>
-                <input type="datetime-local" id="ev-end" name="end_time" class="form-control" required>
-            </div>
+<!-- Registration Closes -->
+<div class="form-group">
+    <label class="form-label" for="ev-registration-end">Registration Closes *</label>
+    <input type="datetime-local"
+           id="ev-registration-end"
+           name="registration_deadline"
+           class="form-control"
+           required>
+    <small style="color: var(--text-muted);">
+        Registration closes before the event begins.
+    </small>
+</div>
+
+<!-- Start Time -->
+<div class="form-group">
+    <label class="form-label" for="ev-start">Start Date & Time *</label>
+    <input type="datetime-local"
+           id="ev-start"
+           name="start_time"
+           class="form-control"
+           required>
+</div>
+
+<!-- End Time -->
+<div class="form-group">
+    <label class="form-label" for="ev-end">End Date & Time *</label>
+    <input type="datetime-local"
+           id="ev-end"
+           name="end_time"
+           class="form-control"
+           required>
+</div>
         </div>
 
         <!-- Tagline -->
