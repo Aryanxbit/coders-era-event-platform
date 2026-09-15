@@ -5,16 +5,11 @@
 [![Database-SQLite3](https://img.shields.io/badge/Database-SQLite3%20WAL-lightgrey.svg)](https://sqlite.org/)
 [![License-MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
-An end-to-end, high-performance event management and secure one-time verification platform engineered for developer communities, hackathons, and technical symposiums. Designed with a modern, high-craft developer dark-mode aesthetic inspired by developer community hubs like Coders Era.
+An end-to-end event management and secure one-time verification platform engineered for developer communities, hackathons, and technical symposiums. Designed with a modern dark-mode developer aesthetic inspired by community-focused technical platforms.
 
 > [!NOTE]
 > **Design Reference Notice:**
-> The public website `codersera.in` is utilized strictly as an external, read-only design and thematic reference for dark-mode styling and developer-centric aesthetics. This repository is an independent college project and does not modify, deploy to, or claim ownership of any third-party domain or trademarked assets.
-
-> [!IMPORTANT]
-> **Project Delivery Timeline & Development Freeze:**
-> - **Development Freeze (Feature-Complete Deadline):** **September 17, 2026 (End of Day)** — The application must be demo-ready, fully functional, and stable. **No major new features will be introduced after September 17.**
-> - **Buffer & Final Submission Day:** **September 18, 2026** — Strictly reserved for final regression testing, minor bug fixes, demo practice, and final project submission.
+> This is an independent project developed for the Coders Era Club selection process. Coders Era names, branding, and third-party assets referenced for design inspiration remain the property of their respective owners.
 
 ---
 
@@ -26,15 +21,15 @@ An end-to-end, high-performance event management and secure one-time verificatio
 4. **🎟️ Unique Secure Ticket ID:** Generates unpredictable `CE-XXXX-XXXX-XXXX` codes backed by 256-bit cryptographic secrets.
 5. **📱 QR Digital Ticket:** Rendered digital boarding pass displaying attendee details, Ticket ID, and QR code with one-click PNG download and print support.
 6. **🔑 Organizer Authentication:** Session-based authentication with salted PBKDF2 password hashing.
-7. **📊 Admin Dashboard:** Real-time telemetry displaying total registrations, checked-in count, pending count, and attendance percentage.
+7. **📊 Admin Dashboard:** Live dashboard displaying total registrations, checked-in count, pending count, and attendance percentage.
 8. **🔍 Participant Management & Search:** Searchable attendee directory with live query filtering.
-9. **📷 In-Browser Camera Scanner:** Native mobile browser QR code scanner powered by `html5-qrcode` without requiring any mobile app download.
-10. **⌨️ Manual Ticket ID Verification:** Manual code entry fallback for damaged screens or offline verification.
+9. **📷 In-Browser Camera Scanner:** QR code scanner powered by `html5-qrcode`, using supported device cameras and webcams without requiring a separate mobile app.
+10. **⌨️ Manual Ticket ID Verification:** Manual Ticket ID entry fallback when QR scanning is unavailable.
 11. **⚡ Atomic One-Time Check-In:** Guaranteed race-condition-proof verification. Once a ticket is checked in, it can **never** be checked in again for that event. Fast verification response suitable for real-time event check-in.
 12. **📈 Attendance Statistics:** Live calculations of attendance rates.
 13. **📁 CSV Export:** One-click download of the complete attendee roster and custom question responses.
 
-*(Optional post-MVP features such as automated email delivery, JSON export, sound effects, and complex particle animations are strictly non-blocking).*
+> Optional post-MVP enhancements such as automated email delivery and JSON export are non-blocking.
 
 ---
 
@@ -42,15 +37,14 @@ An end-to-end, high-performance event management and secure one-time verificatio
 
 | Component | Technology | Rationale |
 | :--- | :--- | :--- |
-| **Backend** | Python 3.14 + Flask 3.x | Lightweight, robust, standard university viva appeal, clear modular architecture. |
+| **Backend** | Python 3.14 + Flask 3.x | Lightweight, robust, and easy to understand, with a clear modular architecture. |
 | **Database** | SQLite3 (WAL Mode) | Zero configuration, ACID-compliant transactional consistency, zero server daemon overhead. |
 | **Frontend** | Modern Vanilla HTML5 + CSS3 + ES6 JS | Fast, zero build step (no compilation or bundler overhead), lightweight, developer dark aesthetic. |
-| **QR Generation**| Python `qrcode` + Pillow | Vector/matrix QR generation with embedded cryptographic secrets. |
-| **Camera Scanner**| `html5-qrcode` | Native in-browser camera scanning on iOS Safari, Android Chrome, and laptop webcams. |
+| **QR Generation**| Python `qrcode` + Pillow | Generates QR tickets containing secure verification tokens. |
+| **Camera Scanner**| `html5-qrcode` | In-browser QR scanning using supported device cameras and webcams.|
 
 > [!TIP]
-> **Environment Note:**
-> While Node.js (v24.21.0) and npm (11.19.0) are available on the development machine, the Python Flask + SQLite stack was chosen deliberately to maximize reliability, avoid complex frontend build toolchains, and ensure effortless execution on any evaluation machine for the college deadline.
+> **Environment Note:** The project intentionally uses Python + Flask + SQLite with no frontend build step, keeping local setup lightweight and straightforward for development and evaluation.
 
 ---
 
@@ -110,7 +104,7 @@ Open your browser and navigate to: **`http://127.0.0.1:5000`**
 
 ---
 
-## 🎓 College Viva & Demo Walkthrough Guide
+## 🎯 Demo Walkthrough Guide
 
 Follow these steps during your project demonstration or interview:
 
@@ -137,7 +131,7 @@ Follow these steps during your project demonstration or interview:
    - Look back at the Dashboard: Checked-in count increments immediately!
    - **Second Attempt (Duplicate Check):** Scan the exact same QR code again.
    - Shows an instant **RED "REJECTED: ALREADY CHECKED IN"** alert, showing the exact time it was previously checked in and by whom.
-   - Explain to the examiner why this is atomic and immune to race conditions (refer to `ARCHITECTURE.md`).
+   - Explain why the check-in operation is atomic and protected against duplicate or concurrent verification attempts (refer to `ARCHITECTURE.md`).
 
 5. **Participant Management & CSV Export:**
    - Go to `/admin/participants`.
@@ -147,10 +141,13 @@ Follow these steps during your project demonstration or interview:
 ---
 
 ## 📚 Project Documentation Files
-- [PROJECT_SPEC.md](file:///c:/Users/Aryan%20Gupta/coders-era-event-platform/PROJECT_SPEC.md) — Product specification, Core MVP scope, timeline, and non-functional requirements.
-- [ARCHITECTURE.md](file:///c:/Users/Aryan%20Gupta/coders-era-event-platform/ARCHITECTURE.md) — System architecture, ERD, API contracts, and concurrency proofs.
-- [DECISIONS.md](file:///c:/Users/Aryan%20Gupta/coders-era-event-platform/DECISIONS.md) — Architectural Decision Records (ADRs 001–008).
-- [TODO.md](file:///c:/Users/Aryan%20Gupta/coders-era-event-platform/TODO.md) — Phased MVP task tracker and Development Freeze policy.
+- [PROJECT_SPEC.md](PROJECT_SPEC.md) — Product specification, Core MVP scope, and non-functional requirements.
+
+- [ARCHITECTURE.md](ARCHITECTURE.md) — System architecture, ERD, API contracts, and concurrency proofs.
+
+- [DECISIONS.md](DECISIONS.md) — Architectural Decision Records (ADRs 001–008).
+
+- [TODO.md](TODO.md) — Phased MVP task tracker.
 
 ---
 
@@ -158,4 +155,4 @@ Follow these steps during your project demonstration or interview:
 
 Built by Aryan Gupta for the Coders Era Club Selection Process (2026).
 
-GitHub: https://github.com/Aryanxbit
+GitHub: [Aryanxbit](https://github.com/Aryanxbit)
