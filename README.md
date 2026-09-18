@@ -6,6 +6,11 @@
 [![License-MIT](https://img.shields.io/badge/License-MIT-purple.svg)](LICENSE)
 
 An end-to-end event management and secure one-time verification platform engineered for developer communities, hackathons, and technical symposiums. Designed with a modern dark-mode developer aesthetic inspired by community-focused technical platforms.
+## 🚀 Live Demo
+
+**Live Application:** https://aryan-coders-era-event-platform.onrender.com
+
+Try the deployed platform to explore event registration, digital tickets, QR verification, organizer dashboard, participant management, and one-time check-in.
 
 > [!NOTE]
 > **Design Reference Notice:**
